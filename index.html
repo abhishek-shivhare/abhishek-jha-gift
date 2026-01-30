@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Favorite Person</title>
+    <style>
+        :root {
+            --bg-color: #05070a;
+            --heart-color: #ff3860;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            transition: background 3s ease;
+            cursor: crosshair;
+        }
+
+        #star-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .content {
+            text-align: center;
+            z-index: 10;
+            pointer-events: none; /* Allows clicks to pass to background */
+        }
+
+        #center-heart {
+            font-size: 120px;
+            color: var(--heart-color);
+            cursor: pointer;
+            pointer-events: auto;
+            filter: drop-shadow(0 0 30px var(--heart-color));
+            animation: pulse 1.2s infinite;
+            user-select: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 50px var(--heart-color)); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            color: white;
+            opacity: 0;
+            transition: opacity 2s;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-top: 20px;
+        }
+
+        .floating-text {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            font-size: 14px;
+            animation: fadeUp 3s forwards;
+        }
+
+        @keyframes fadeUp {
+            to { transform: translateY(-100px); opacity: 0; }
+        }
+
+        #letter-btn {
+            margin-top: 30px;
+            padding: 10px 25px;
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: auto;
+            transition: all 0.5s;
+        }
+
+        #letter-btn:hover {
+            background: white;
+            color: var(--heart-color);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="star-canvas"></canvas>
+
+    <div class="content">
+        <div id="center-heart" onclick="expressLove()">❤</div>
+        <h1 id="headline">You light up my world.</h1>
+        <button id="letter-btn" onclick="openLetter()">Open My Heart</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+        let clickCount = 0;
+        let particles = [];
+
+        // Resize canvas
+        window.onresize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        window.onresize();
+
+        // Star Particle System
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = `hsl(${Math.random() * 30 + 340}, 100%, 70%)`;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.1) this.size -= 0.02;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Mouse trail
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 2; i++) {
+                particles.push(new Particle(e.x, e.y));
+            }
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].size <= 0.1) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Romantic Interaction
+        const phrases = ["Incredible", "Beautiful", "Smart", "My Always", "Pure Magic"];
+
+        function expressLove() {
+            clickCount++;
+            
+            // 1. Shake the heart
+            const heart = document.getElementById('center-heart');
+            heart.style.transform = "scale(1.5)";
+            setTimeout(() => heart.style.transform = "scale(1)", 200);
+
+            // 2. Change background warmth
+            if(clickCount < 10) {
+                const lightness = clickCount * 3;
+                document.body.style.backgroundColor = `rgb(${lightness + 20}, ${lightness/2}, ${lightness/2})`;
+            }
+
+            // 3. Show floating text at random spots
+            const text = document.createElement('div');
+            text.className = 'floating-text';
+            text.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+            text.style.left = (Math.random() * 80 + 10) + "vw";
+            text.style.top = (Math.random() * 80 + 10) + "vh";
+            document.body.appendChild(text);
+
+            // 4. Reveal Headline and Button
+            if (clickCount === 3) document.getElementById('headline').style.opacity = "1";
+            if (clickCount === 7) {
+                const btn = document.getElementById('letter-btn');
+                btn.style.opacity = "1";
+                btn.style.animation = "pulse 1.5s infinite";
+            }
+        }
+
+        function openLetter() {
+            alert("I was going to write a beautiful letter, but no font in the world is as pretty as your smile. Let's make our own story instead.");
+        }
+    </script>
+</body>
+</html>
